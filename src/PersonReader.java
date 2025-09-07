@@ -3,11 +3,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PersonReader {
     public static void main(String[] args) {
         Scanner pipe = new Scanner(System.in);
+        SafeInputObj input = new SafeInputObj(pipe);
 
         JFileChooser chooser = new JFileChooser(".");
         int choice = chooser.showOpenDialog(null);
@@ -18,27 +20,37 @@ public class PersonReader {
         }
 
         Path file = chooser.getSelectedFile().toPath();
-
-        // Display header
-        System.out.printf("%-8s %-12s %-12s %-8s %-6s%n", "ID#", "FirstName", "LastName", "Title", "YOB");
-        System.out.println("==========================================================");
+        ArrayList<Person> people = new ArrayList<>();
 
         try (BufferedReader reader = Files.newBufferedReader(file)) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",\\s*");
                 if (parts.length == 5) {
-                    System.out.printf("%-8s %-12s %-12s %-8s %-6s%n",
-                            parts[0], parts[1], parts[2], parts[3], parts[4]);
+                    String id = parts[0];
+                    String firstName = parts[1];
+                    String lastName = parts[2];
+                    String title = parts[3];
+                    int yob = Integer.parseInt(parts[4]);
+
+                    Person p = new Person(id, firstName, lastName, title, yob);
+                    people.add(p);
                 }
             }
         } catch (IOException e) {
             System.out.println("Error reading file: " + e.getMessage());
         }
 
-        // Ask user if they want to read another file (optional)
-        boolean again = SafeInput.getYNConfirm(pipe,"Do you want to read another file?");
-        if (again) {
+        // Display data
+        System.out.printf("%-8s %-12s %-12s %-8s %-6s%n", "ID#", "FirstName", "LastName", "Title", "YOB");
+        System.out.println("==========================================================");
+        for (Person p : people) {
+            System.out.printf("%-8s %-12s %-12s %-8s %-6d%n",
+                    p.getID(), p.getFirstName(), p.getLastName(), p.getTitle(), p.getYOB());
+        }
+
+        // Optional: read another file
+        if (input.getYNConfirm("Do you want to read another file?")) {
             main(null); // restart program
         }
 

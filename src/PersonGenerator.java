@@ -9,42 +9,37 @@ import java.util.Scanner;
 
 public class PersonGenerator {
     public static void main(String[] args) {
-        Scanner pipe = new Scanner(System.in);             // <-- create Scanner
-        ArrayList<String> records = new ArrayList<>();
+        Scanner pipe = new Scanner(System.in);
+        ArrayList<Person> people = new ArrayList<>();
+        SafeInputObj input = new SafeInputObj(pipe);
 
         boolean done = false;
         while (!done) {
             System.out.println("\nEnter a new person record:");
 
-            // Pass 'pipe' as the first argument to SafeInput methods:
-            String id = SafeInput.getNonZeroLenString(pipe, "Enter ID");
-            String firstName = SafeInput.getNonZeroLenString(pipe, "Enter First Name");
-            String lastName = SafeInput.getNonZeroLenString(pipe, "Enter Last Name");
-            String title = SafeInput.getNonZeroLenString(pipe, "Enter Title (Mr., Mrs., Ms., Dr., etc.)");
-            int yob = SafeInput.getRangedInt(pipe, "Enter Year of Birth", 1000, 9999);
+            String id = input.getNonZeroLenString("Enter ID");
+            String firstName = input.getNonZeroLenString("Enter First Name");
+            String lastName = input.getNonZeroLenString("Enter Last Name");
+            String title = input.getNonZeroLenString("Enter Title (Mr., Mrs., Ms., Dr., etc.)");
+            int yob = input.getRangedInt("Enter Year of Birth", 1940, 2010);
 
-            // Build the CSV line exactly as required
-            String record = String.format("%s, %s, %s, %s, %d", id, firstName, lastName, title, yob);
-            records.add(record);
+            Person p = new Person(id, firstName, lastName, title, yob);
+            people.add(p);
 
-            // getYNConfirm takes only the prompt in SafeInput
-            done = !SafeInput.getYNConfirm(pipe,"Do you want to add another person?");
+            done = !input.getYNConfirm("Do you want to add another person?");
         }
 
-        // Ask file name (use SafeInput with pipe)
-        String fileName = SafeInput.getNonZeroLenString(pipe, "Enter file name to save (e.g., PersonTestData.txt)");
+        String fileName = input.getNonZeroLenString("Enter file name to save (e.g., PersonTestData.txt)");
 
-        // Save file using NIO
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fileName))) {
-            for (String rec : records) {
-                writer.write(rec);
+            for (Person p : people) {
+                writer.write(p.toCSV());
                 writer.newLine();
             }
             System.out.println("Data successfully written to " + fileName);
         } catch (IOException e) {
             System.out.println("Error writing to file: " + e.getMessage());
         } finally {
-            // optional: close scanner when finished (program exits afterward)
             pipe.close();
         }
     }

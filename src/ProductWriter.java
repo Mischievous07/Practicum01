@@ -8,28 +8,29 @@ import java.util.Scanner;
 public class ProductWriter {
     public static void main(String[] args) {
         Scanner pipe = new Scanner(System.in);
-        ArrayList<String> products = new ArrayList<>();
+        SafeInputObj input = new SafeInputObj(pipe);
+        ArrayList<Product> products = new ArrayList<>();
 
         boolean done = false;
         while (!done) {
             System.out.println("\nEnter a new product record:");
 
-            String id = SafeInput.getNonZeroLenString(pipe, "Enter Product ID");
-            String name = SafeInput.getNonZeroLenString(pipe, "Enter Product Name");
-            String description = SafeInput.getNonZeroLenString(pipe, "Enter Product Description");
-            double cost = SafeInput.getDouble(pipe, "Enter Product Cost");
+            String id = input.getNonZeroLenString("Enter Product ID");
+            String name = input.getNonZeroLenString("Enter Product Name");
+            String description = input.getNonZeroLenString("Enter Product Description");
+            double cost = input.getDouble("Enter Product Cost");
 
-            String record = String.format("%s, %s, %s, %.2f", id, name, description, cost);
-            products.add(record);
+            Product p = new Product(id, name, description, cost);
+            products.add(p);
 
-            done = !SafeInput.getYNConfirm(pipe,"Do you want to add another product?");
+            done = !input.getYNConfirm("Do you want to add another product?");
         }
 
-        String fileName = SafeInput.getNonZeroLenString(pipe, "Enter file name to save (e.g., ProductTestData.txt)");
+        String fileName = input.getNonZeroLenString("Enter file name to save (e.g., ProductTestData.txt)");
 
         try (BufferedWriter writer = Files.newBufferedWriter(Path.of(fileName))) {
-            for (String rec : products) {
-                writer.write(rec);
+            for (Product p : products) {
+                writer.write(p.toCSV());
                 writer.newLine();
             }
             System.out.println("Data successfully written to " + fileName);
@@ -40,4 +41,3 @@ public class ProductWriter {
         }
     }
 }
-/* buh buh aiosnidfnoiasndifonaiosdnfioasdn HELLO IT is ME (NAME REMOVED BECAUSE I DONT WANT IT PUBLIC ) K*/
